@@ -31,4 +31,15 @@ public class AccountsRepositoryInMemory implements AccountsRepository {
         accounts.clear();
     }
 
+    @Override
+    public void updateAccount(Account account) {
+       if(accounts.containsKey(account.getAccountId()) ) {
+           accounts.put(account.getAccountId(), account);
+       }
+       else{
+           //throw account does not exist exception
+       }
+
+    }
+
 }
