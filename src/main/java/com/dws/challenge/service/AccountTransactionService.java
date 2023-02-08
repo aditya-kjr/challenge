@@ -14,15 +14,13 @@ import java.math.BigDecimal;
 public class AccountTransactionService implements IAccountTransactionService {
 
     @Autowired
-    AccountsService accountsService;
+    private AccountsService accountsService;
 
     @Autowired
-    AccountsRepository accountsRepository;
+    private AccountsRepository accountsRepository;
 
     @Autowired
-    EmailNotificationService emailNotificationService;
-
-    AmountTransferResponse amountTransferResponse;
+    private EmailNotificationService emailNotificationService;
 
 
     @Override
@@ -33,15 +31,12 @@ public class AccountTransactionService implements IAccountTransactionService {
 
         if (ObjectUtils.isEmpty(fromAccount) || ObjectUtils.isEmpty(toAccount)) {
             // if account not found then throw exception
-
             throw new InvalidAccountDetailsException("AccountId does not exists");
 
         } else {
             return createTransaction(amount, fromAccount, toAccount);
 
         }
-
-
     }
 
     private synchronized AmountTransferResponse createTransaction(BigDecimal amount, Account fromAccount, Account toAccount) {
@@ -58,7 +53,7 @@ public class AccountTransactionService implements IAccountTransactionService {
             fromAccount.setBalance(fromAccount.getBalance().subtract(amount));
             toAccount.setBalance(toAccount.getBalance().add(amount));
             accountsRepository.updateAccount(fromAccount);
-            accountsRepository.updateAccount((toAccount));
+            accountsRepository.updateAccount(toAccount);
 
             //call notification service :  Amount Transfer successful
             emailNotificationService.notifyAboutTransfer(fromAccount, String.format("Money transfer request for amount: %s to AccountId : %s  was successfully processed.", amount.toString(), toAccount.getAccountId()));

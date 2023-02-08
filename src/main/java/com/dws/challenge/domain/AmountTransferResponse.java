@@ -5,6 +5,6 @@ import lombok.Data;
 @Data
 public class AmountTransferResponse {
 
-    String status;
-    String responseMessage;
+    private String status;
+    private String responseMessage;
 }
