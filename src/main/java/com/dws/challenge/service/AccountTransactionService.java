@@ -4,6 +4,7 @@ import com.dws.challenge.domain.Account;
 import com.dws.challenge.domain.AmountTransferResponse;
 import com.dws.challenge.exception.InvalidAccountDetailsException;
 import com.dws.challenge.repository.AccountsRepository;
+import com.dws.challenge.utility.AccountSyncOrderResolver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
@@ -50,10 +51,17 @@ public class AccountTransactionService implements IAccountTransactionService {
             response.setResponseMessage("Insufficient Account Balance");
 
         } else {
-            fromAccount.setBalance(fromAccount.getBalance().subtract(amount));
-            toAccount.setBalance(toAccount.getBalance().add(amount));
-            accountsRepository.updateAccount(fromAccount);
-            accountsRepository.updateAccount(toAccount);
+
+            final AccountSyncOrderResolver resolver = AccountSyncOrderResolver.resolve(toAccount, fromAccount);
+            synchronized (resolver.getFirst()) {
+                synchronized (resolver.getSecond()){
+                    fromAccount.setBalance(fromAccount.getBalance().subtract(amount));
+                    toAccount.setBalance(toAccount.getBalance().add(amount));
+                    accountsRepository.updateAccount(fromAccount);
+                    accountsRepository.updateAccount(toAccount);
+                }
+
+            }
 
             //call notification service :  Amount Transfer successful
             emailNotificationService.notifyAboutTransfer(fromAccount, String.format("Money transfer request for amount: %s to AccountId : %s  was successfully processed.", amount.toString(), toAccount.getAccountId()));
