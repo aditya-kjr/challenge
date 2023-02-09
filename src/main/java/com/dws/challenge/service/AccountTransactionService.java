@@ -39,6 +39,7 @@ public class AccountTransactionService implements IAccountTransactionService {
             try {
                 return createTransaction(amount, fromAccount, toAccount);
             } catch (InsufficientAccountBalanceException e) {
+                emailNotificationService.notifyAboutTransfer(fromAccount, "Money transfer request failed due to insufficient account balance.");
                 throw e;
             }
 
@@ -52,7 +53,6 @@ public class AccountTransactionService implements IAccountTransactionService {
         synchronized (resolver.getFirst()) {
             synchronized (resolver.getSecond()) {
                 if (fromAccount.getBalance().compareTo(amount) < 0) {
-                    emailNotificationService.notifyAboutTransfer(fromAccount, "Money transfer request failed due to insufficient account balance.");
                     throw new InsufficientAccountBalanceException("Insufficient Account Balance");
 
                 } else {
