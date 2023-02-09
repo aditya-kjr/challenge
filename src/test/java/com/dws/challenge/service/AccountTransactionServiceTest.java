@@ -3,6 +3,7 @@ package com.dws.challenge.service;
 
 import com.dws.challenge.domain.Account;
 import com.dws.challenge.domain.AmountTransferResponse;
+import com.dws.challenge.exception.InsufficientAccountBalanceException;
 import com.dws.challenge.exception.InvalidAccountDetailsException;
 import com.dws.challenge.repository.AccountsRepository;
 import org.junit.Before;
@@ -54,33 +55,31 @@ public class AccountTransactionServiceTest {
     }
 
     @Test
-    void givenInvalidAccountDetailsThenThrowException(){
+    void givenInvalidAccountDetailsThenThrowException() {
 
         Mockito.when(accountsService.getAccount(Mockito.any())).thenReturn(null).thenReturn(null);
-        Assertions.assertThrowsExactly (InvalidAccountDetailsException.class, () -> accountTransactionService.transferMoney(new BigDecimal(100), "A001" , "A002"));
+        Assertions.assertThrowsExactly(InvalidAccountDetailsException.class, () -> accountTransactionService.transferMoney(new BigDecimal(100), "A001", "A002"));
 
     }
 
     @Test
-    void givenInsufficientBalanceThenReturnFailureResponse() throws InvalidAccountDetailsException {
-        Account fromAccount  =  new Account("A001", new BigDecimal(0));
+    void givenInsufficientBalanceThenThrowException() {
+        Account fromAccount = new Account("A001", new BigDecimal(0));
         Account toAccount = new Account("A002", new BigDecimal(300));
 
         Mockito.when(accountsService.getAccount(Mockito.any())).thenReturn(fromAccount).thenReturn(toAccount);
-        AmountTransferResponse response =  accountTransactionService.transferMoney(new BigDecimal(500), "A001", "A002");
-        Assertions.assertEquals("FAILED", response.getStatus());
-        Assertions.assertEquals("Insufficient Account Balance", response.getResponseMessage());
+        Assertions.assertThrowsExactly(InsufficientAccountBalanceException.class, () -> accountTransactionService.transferMoney(new BigDecimal(500), "A001", "A002"));
 
     }
 
     @Test
-    void testCreateTransactionSuccessful() throws InvalidAccountDetailsException {
+    void testCreateTransactionSuccessful() throws InvalidAccountDetailsException, InsufficientAccountBalanceException {
 
-        Account fromAccount  =  new Account("A001", new BigDecimal(1000));
+        Account fromAccount = new Account("A001", new BigDecimal(1000));
         Account toAccount = new Account("A002", new BigDecimal(0));
         Mockito.when(accountsService.getAccount(Mockito.any())).thenReturn(fromAccount).thenReturn(toAccount);
 
-        AmountTransferResponse response =  accountTransactionService.transferMoney(new BigDecimal(500), "A001", "A002");
+        AmountTransferResponse response = accountTransactionService.transferMoney(new BigDecimal(500), "A001", "A002");
         Assertions.assertEquals("SUCCESSFUL", response.getStatus());
         Assertions.assertEquals("Amount was successfully transferred", response.getResponseMessage());
 

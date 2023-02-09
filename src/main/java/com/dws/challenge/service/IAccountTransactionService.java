@@ -1,6 +1,7 @@
 package com.dws.challenge.service;
 
 import com.dws.challenge.domain.AmountTransferResponse;
+import com.dws.challenge.exception.InsufficientAccountBalanceException;
 import com.dws.challenge.exception.InvalidAccountDetailsException;
 
 import java.math.BigDecimal;
@@ -8,5 +9,5 @@ import java.math.BigDecimal;
 public interface IAccountTransactionService {
 
 
-    AmountTransferResponse transferMoney(BigDecimal amount, String fromAccount, String toAccount) throws InvalidAccountDetailsException;
+    AmountTransferResponse transferMoney(BigDecimal amount, String fromAccount, String toAccount) throws InvalidAccountDetailsException, InsufficientAccountBalanceException;
 }

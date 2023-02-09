@@ -2,8 +2,10 @@ package com.dws.challenge.web;
 
 import com.dws.challenge.domain.AmountTransferRequest;
 import com.dws.challenge.domain.AmountTransferResponse;
+import com.dws.challenge.exception.InsufficientAccountBalanceException;
 import com.dws.challenge.exception.InvalidAccountDetailsException;
 import com.dws.challenge.service.AccountTransactionService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +17,7 @@ import javax.validation.Valid;
 import java.math.BigDecimal;
 
 @Controller
+@Slf4j
 public class AccountTransactionController {
 
     @Autowired
@@ -30,6 +33,11 @@ public class AccountTransactionController {
             AmountTransferResponse response = accountTransactionService.transferMoney(request.getAmount(), request.getFromAccountId(), request.getToAccountId());
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (InvalidAccountDetailsException e) {
+            log.error(e.getMessage());
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.UNPROCESSABLE_ENTITY);
+        }
+        catch (InsufficientAccountBalanceException e){
+            log.error(e.getMessage());
             return new ResponseEntity<>(e.getMessage(), HttpStatus.UNPROCESSABLE_ENTITY);
         }
 

@@ -3,6 +3,7 @@ package com.dws.challenge.web;
 
 import com.dws.challenge.domain.AmountTransferRequest;
 import com.dws.challenge.domain.AmountTransferResponse;
+import com.dws.challenge.exception.InsufficientAccountBalanceException;
 import com.dws.challenge.exception.InvalidAccountDetailsException;
 import com.dws.challenge.service.AccountTransactionService;
 import org.junit.Before;
@@ -52,7 +53,7 @@ public class AccountTransactionControllerTest {
     }
 
     @Test
-    void createAccountTransaction() throws InvalidAccountDetailsException {
+    void createAccountTransaction() throws InvalidAccountDetailsException, InsufficientAccountBalanceException {
         AmountTransferResponse responseObject = new AmountTransferResponse();
         responseObject.setStatus("SUCCESSFUL");
 
@@ -66,25 +67,34 @@ public class AccountTransactionControllerTest {
 
         Assertions.assertNotNull(response);
         Assertions.assertEquals(200, response.getStatusCodeValue());
-
-
     }
 
     @Test
-    void createAccountTransactionException() throws InvalidAccountDetailsException {
+    void createAccountTransactionInvalidAccountDetailsException() throws InvalidAccountDetailsException, InsufficientAccountBalanceException {
         AmountTransferRequest requestObject = new AmountTransferRequest();
         requestObject.setToAccountId("");
         requestObject.setToAccountId("");
         requestObject.setAmount(new BigDecimal(1000));
 
         Mockito.when(accountTransactionService.transferMoney(Mockito.any(), Mockito.any(), Mockito.any())).thenThrow(new InvalidAccountDetailsException("Invalid Account Details"));
-        //Assertions.assertThrowsExactly(InvalidAccountDetailsException.class, () -> accountTransactionController.transferAmount(requestObject));
         ResponseEntity<Object> response = accountTransactionController.transferAmount(requestObject);
         Assertions.assertEquals(422, response.getStatusCodeValue());
     }
 
     @Test
-    void negativeTransferAmountTest() throws InvalidAccountDetailsException {
+    void createAccountTransactionInsufficientAccountBalanceException() throws InvalidAccountDetailsException, InsufficientAccountBalanceException {
+        AmountTransferRequest requestObject = new AmountTransferRequest();
+        requestObject.setToAccountId("");
+        requestObject.setToAccountId("");
+        requestObject.setAmount(new BigDecimal(1000));
+
+        Mockito.when(accountTransactionService.transferMoney(Mockito.any(), Mockito.any(), Mockito.any())).thenThrow(new InsufficientAccountBalanceException("Insufficient Account Balance"));
+        ResponseEntity<Object> response = accountTransactionController.transferAmount(requestObject);
+        Assertions.assertEquals(422, response.getStatusCodeValue());
+    }
+
+    @Test
+    void negativeTransferAmountTest() {
 
         AmountTransferRequest requestObject = new AmountTransferRequest();
         requestObject.setToAccountId("");
